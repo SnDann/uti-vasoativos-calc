@@ -47,7 +47,7 @@ git clone https://github.com/SnDann/uti-vasoativos-calc.git
 open index.html
 ```
 
-Ou acessar via deploy: [link Vercel]
+Ou acessar via deploy: [uti-vasoativos-calc.vercel.app](https://uti-vasoativos-calc.vercel.app)
 
 ---
 
