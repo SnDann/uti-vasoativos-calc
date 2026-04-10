@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora Clínica — Vasoativos e Sedoanalgesia | UTI Adulto</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0b0f14;
+      --surface:   #111720;
+      --surface2:  #161d28;
+      --border:    #1e2a38;
+      --border2:   #243040;
+      --accent:    #2a7fff;
+      --accent2:   #1a5fcc;
+      --danger:    #c0392b;
+      --warn:      #d4860a;
+      --ok:        #1a8a4a;
+      --text:      #e2e8f0;
+      --text2:     #8a9bb0;
+      --text3:     #5a6d82;
+      --mono:      'IBM Plex Mono', monospace;
+      --sans:      'IBM Plex Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left h1 {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--text);
+    }
+
+    .header-left p {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 3px;
+      letter-spacing: 0.02em;
+    }
+
+    .header-badge {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      border: 1px solid var(--accent2);
+      padding: 4px 10px;
+      letter-spacing: 0.06em;
+    }
+
+    /* LAYOUT */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* PANELS */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    .panel-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--text2);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-header::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+    }
+
+    .panel-body { padding: 20px; }
+
+    /* INPUTS */
+    .field { margin-bottom: 16px; }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+    }
+
+    .field input:focus, .field select:focus {
+      border-color: var(--accent);
+    }
+
+    .field select option {
+      background: var(--surface);
+    }
+
+    .field .unit {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .field .unit input {
+      flex: 1;
+    }
+
+    .field .unit span {
+      background: var(--border);
+      border: 1px solid var(--border2);
+      border-left: none;
+      padding: 10px 12px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text3);
+      white-space: nowrap;
+    }
+
+    /* DRUG SELECTOR */
+    .drug-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 0;
+    }
+
+    .drug-category {
+      grid-column: 1 / -1;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+      text-transform: uppercase;
+      padding: 10px 0 4px;
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+    }
+
+    .drug-category:first-child {
+      border-top: none;
+      margin-top: 0;
+      padding-top: 0;
+    }
+
+    .drug-btn {
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 10px 8px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      letter-spacing: 0.02em;
+    }
+
+    .drug-btn:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .drug-btn.active {
+      border-color: var(--accent);
+      background: rgba(42, 127, 255, 0.08);
+      color: var(--accent);
+    }
+
+    .drug-btn .drug-name { font-weight: 600; display: block; }
+    .drug-btn .drug-class { font-size: 10px; color: var(--text3); margin-top: 2px; display: block; }
+
+    /* RESULTS */
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      margin-bottom: 20px;
+    }
+
+    .result-card {
+      background: var(--surface2);
+      padding: 18px 20px;
+    }
+
+    .result-card .label {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .result-card .value {
+      font-family: var(--mono);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .result-card .value.warn { color: var(--warn); }
+    .result-card .value.danger { color: var(--danger); }
+    .result-card .value.ok { color: var(--ok); }
+
+    .result-card .subvalue {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 6px;
+    }
+
+    /* RANGE BAR */
+    .range-section {
+      margin-bottom: 20px;
+    }
+
+    .range-label {
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--text3);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .range-bar-wrap {
+      position: relative;
+      height: 6px;
+      background: var(--border);
+      margin-bottom: 6px;
+    }
+
+    .range-bar-fill {
+      position: absolute;
+      height: 100%;
+      left: 0;
+      transition: width 0.3s, background 0.3s;
+    }
+
+    .range-marker {
+      position: absolute;
+      top: -4px;
+      width: 2px;
+      height: 14px;
+      background: var(--text3);
+      transform: translateX(-50%);
+    }
+
+    .range-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    .range-classification {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      padding: 3px 8px;
+      border: 1px solid;
+    }
+
+    .badge-ok { color: var(--ok); border-color: var(--ok); background: rgba(26,138,74,0.08); }
+    .badge-warn { color: var(--warn); border-color: var(--warn); background: rgba(212,134,10,0.08); }
+    .badge-danger { color: var(--danger); border-color: var(--danger); background: rgba(192,57,43,0.08); }
+    .badge-neutral { color: var(--text3); border-color: var(--border2); }
+
+    /* DRUG INFO */
+    .drug-info {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+    }
+
+    .drug-info-name {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .drug-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .drug-info-row:last-child { border-bottom: none; }
+
+    .drug-info-row .k { color: var(--text3); }
+    .drug-info-row .v { font-family: var(--mono); color: var(--text); text-align: right; }
+
+    /* CONCENTRATION TABLE */
+    .conc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .conc-table th {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: var(--text3);
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .conc-table td {
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      color: var(--text);
+    }
+
+    .conc-table tr.active-row td {
+      background: rgba(42, 127, 255, 0.06);
+      color: var(--accent);
+    }
+
+    .conc-table tr:hover td { background: var(--surface2); }
+
+    /* DISCLAIMER */
+    .disclaimer {
+      margin-top: 20px;
+      padding: 12px 16px;
+      border-left: 2px solid var(--warn);
+      background: rgba(212,134,10,0.04);
+    }
+
+    .disclaimer p {
+      font-size: 11px;
+      color: var(--text3);
+      line-height: 1.6;
+    }
+
+    .disclaimer strong { color: var(--warn); }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 40px;
+    }
+
+    footer p { font-size: 11px; color: var(--text3); }
+    footer a { color: var(--accent); text-decoration: none; font-family: var(--mono); }
+
+    /* EMPTY STATE */
+    .empty-state {
+      padding: 48px 20px;
+      text-align: center;
+      color: var(--text3);
+    }
+
+    .empty-state p { font-size: 13px; line-height: 1.6; }
+
+    @media (max-width: 768px) {
+      .container { grid-template-columns: 1fr; }
+      .result-grid { grid-template-columns: 1fr 1fr; }
+      header { padding: 16px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>CALCULADORA CLINICA — UTI ADULTO</h1>
+    <p>Vasoativos e Sedoanalgesia — Drogas de alta vigilancia</p>
+  </div>
+  <span class="header-badge">USO CLINICO</span>
+</header>
+
+<div class="container">
+
+  <!-- PAINEL ESQUERDO: INPUTS -->
+  <div>
+    <div class="panel" style="margin-bottom: 16px;">
+      <div class="panel-header">Dados do Paciente</div>
+      <div class="panel-body">
+        <div class="field">
+          <label>Peso (kg)</label>
+          <div class="unit">
+            <input type="number" id="peso" min="30" max="250" step="0.5" placeholder="Ex: 75" oninput="calcular()" />
+            <span>kg</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Volume de diluicao</label>
+          <div class="unit">
+            <input type="number" id="volume" min="50" max="500" step="50" placeholder="Ex: 250" oninput="calcular()" />
+            <span>mL</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Dose desejada</label>
+          <div class="unit">
+            <input type="number" id="dose" min="0" max="9999" step="0.1" placeholder="0.0" oninput="calcular()" />
+            <span id="dose-unit">mcg/kg/min</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">Selecionar Droga</div>
+      <div class="panel-body">
+        <div class="drug-grid" id="drug-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAINEL DIREITO: RESULTADOS -->
+  <div id="result-panel">
+    <div class="panel">
+      <div class="panel-header">Resultado</div>
+      <div class="panel-body">
+        <div class="empty-state">
+          <p>Selecione uma droga e preencha os dados do paciente para calcular a velocidade de infusao.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Calculadora Clinica UTI Adulto — Vasoativos e Sedoanalgesia &nbsp;|&nbsp; Desenvolvido por Daniel Pereira da Cruz Junior</p>
+  <a href="https://linkedin.com/in/sndanndev" target="_blank">linkedin.com/in/sndanndev</a>
+</footer>
+
+<script>
+  // ─── BANCO DE DADOS DAS DROGAS ───────────────────────────────────────────────
+  const CATEGORIAS = [
+    { id: 'vasopressor',   label: 'Vasopressores' },
+    { id: 'inotropico',    label: 'Inotrópiicos' },
+    { id: 'vasodilatador', label: 'Vasodilatadores' },
+    { id: 'sedoanalgesia', label: 'Sedacao e Analgesia' },
+  ];
+
+  const DROGAS = [
+    // ── VASOPRESSORES ────────────────────────────────────────────────────────────
+    {
+      id: 'noradrenalina',
+      categoria: 'vasopressor',
+      nome: 'Noradrenalina',
+      classe: 'Vasopressor',
+      apresentacao: 'Ampola 4mg/4mL (1mg/mL)',
+      unidade: 'mcg/kg/min',
+      dose_min: 0.01,
+      dose_max: 3.0,
+      dose_habitual_min: 0.05,
+      dose_habitual_max: 1.5,
+      dose_alerta: 1.0,
+      indicacao: 'Choque septico, choque vasodilatorio',
+      mecanismo: 'Agonista alfa-1 predominante, beta-1 moderado. Potente vasoconstritor com minimo efeito cronotropico.',
+      cuidados: 'Acesso central obrigatorio. Monitorizar PA invasiva. Risco de isquemia periferica e digital em doses elevadas. Extravasamento causa necrose tecidual.',
+      concentracoes_padrao: [4, 8, 16],
+    },
+    {
+      id: 'vasopressina',
+      categoria: 'vasopressor',
+      nome: 'Vasopressina',
+      classe: 'Vasopressor nao-catecolaminergico',
+      apresentacao: 'Ampola 20UI/mL',
+      unidade: 'UI/min',
+      dose_min: 0.01,
+      dose_max: 0.06,
+      dose_habitual_min: 0.02,
+      dose_habitual_max: 0.04,
+      dose_alerta: 0.04,
+      indicacao: 'Choque septico refratario a noradrenalina',
+      mecanismo: 'Agonista V1 (vasoconstrição vascular), V2 (renal). Nao-catecolaminergico — complementa a noradrenalina por via receptorial distinta.',
+      cuidados: 'Nao titular acima de 0.04 UI/min salvo casos excepcionais. Associar sempre a noradrenalina. Pode reduzir DC em doses elevadas. Hiponatremia com uso prolongado.',
+      concentracoes_padrao: [20, 40],
+      unidade_conc: 'UI',
+      calc_especial: 'vasopressina',
+    },
+    {
+      id: 'adrenalina',
+      categoria: 'vasopressor',
+      nome: 'Adrenalina',
+      classe: 'Vasopressor / Inotrópiico',
+      apresentacao: 'Ampola 1mg/mL',
+      unidade: 'mcg/kg/min',
+      dose_min: 0.01,
+      dose_max: 1.0,
+      dose_habitual_min: 0.05,
+      dose_habitual_max: 0.5,
+      dose_alerta: 0.5,
+      indicacao: 'Anafilaxia grave, PCR, choque refratario a noradrenalina e dobutamina',
+      mecanismo: 'Agonista alfa-1, alfa-2, beta-1 e beta-2 nao-seletivo. Potente vasopressor e inotropico positivo.',
+      cuidados: 'Alto risco de taquiarritmias ventriculares. Isquemia miocardica. Hiperglicemia por glicogenolise. Acidose latica em doses altas por hipoperfusao periferica.',
+      concentracoes_padrao: [1, 2, 4],
+    },
+    {
+      id: 'fenilefrina',
+      categoria: 'vasopressor',
+      nome: 'Fenilefrina',
+      classe: 'Vasopressor puro',
+      apresentacao: 'Ampola 10mg/mL',
+      unidade: 'mcg/kg/min',
+      dose_min: 0.1,
+      dose_max: 5.0,
+      dose_habitual_min: 0.5,
+      dose_habitual_max: 3.0,
+      dose_alerta: 3.0,
+      indicacao: 'Hipotensao perioperatoria, hipotensao por vasodilatacao sem comprometimento do DC, TSVP',
+      mecanismo: 'Agonista alfa-1 puro, sem atividade beta. Eleva RVS e PA sem efeito cronotropico ou inotropico direto.',
+      cuidados: 'Bradicardia reflexa por aumento da PA (contraindicada em FC baixa). Nao usar em choque cardiogenico — piora pos-carga. Preferivelmente acesso central.',
+      concentracoes_padrao: [10, 20, 40],
+    },
+    {
+      id: 'terlipressina',
+      categoria: 'vasopressor',
+      nome: 'Terlipressina',
+      classe: 'Vasopressor V1 / Hepatico',
+      apresentacao: 'Ampola 1mg/5mL',
+      unidade: 'mg/h',
+      dose_min: 1.0,
+      dose_max: 4.0,
+      dose_habitual_min: 1.0,
+      dose_habitual_max: 2.0,
+      dose_alerta: 3.0,
+      indicacao: 'Choque hepatorenal, sindrome hepatorrenal tipo 1, hemorragia digestiva varicosa',
+      mecanismo: 'Pro-farmaco da lisina-vasopressina. Agonista V1 hepatico e esplacnico. Redistribui fluxo do leito esplacnico para a circulacao sistemica.',
+      cuidados: 'Pode causar isquemia esplacnica, intestinal e periferica. Bradicardia e hiponatremia. Monitorar funcao renal e sodio diariamente. Nao usar em isquemia coronariana ativa.',
+      concentracoes_padrao: [1, 2, 4],
+      unidade_conc: 'mg',
+      calc_especial: 'mg_h',
+    },
+
+    // ── INOTROPICOS ──────────────────────────────────────────────────────────────
+    {
+      id: 'dopamina',
+      categoria: 'inotropico',
+      nome: 'Dopamina',
+      classe: 'Vasopressor / Inotropico',
+      apresentacao: 'Ampola 50mg/10mL (5mg/mL)',
+      unidade: 'mcg/kg/min',
+      dose_min: 2,
+      dose_max: 20,
+      dose_habitual_min: 5,
+      dose_habitual_max: 15,
+      dose_alerta: 15,
+      indicacao: 'Choque cardiogenico, suporte hemodinamico com hipotensao e bradicardia',
+      mecanismo: '2-5 mcg: dopaminergico (vasodilatacao renal/esplacnica); 5-10 mcg: beta-1 (inotropia e cronotropia); >10 mcg: alfa-1 predominante (vasoconstrição).',
+      cuidados: 'Acesso central preferencial. Arritmias em doses elevadas. Taquicardia reflexa. Uso crescentemente substituido por noradrenalina + dobutamina.',
+      concentracoes_padrao: [200, 400, 800],
+    },
+    {
+      id: 'dobutamina',
+      categoria: 'inotropico',
+      nome: 'Dobutamina',
+      classe: 'Inotropico',
+      apresentacao: 'Ampola 250mg/20mL (12.5mg/mL)',
+      unidade: 'mcg/kg/min',
+      dose_min: 2.5,
+      dose_max: 20,
+      dose_habitual_min: 5,
+      dose_habitual_max: 15,
+      dose_alerta: 15,
+      indicacao: 'Choque cardiogenico, falencia de VD, desmame de suporte vasopressor',
+      mecanismo: 'Agonista beta-1 e beta-2. Inotropia e cronotropia positivas. Beta-2 causa vasodilatacao periferica — pode reduzir PA.',
+      cuidados: 'Monitorar ritmo continuamente — taquiarritmias frequentes. Hipotensao por vasodilatacao beta-2. Nao usar sem vasopressor em choque hipotenso.',
+      concentracoes_padrao: [250, 500, 1000],
+    },
+    {
+      id: 'milrinona',
+      categoria: 'inotropico',
+      nome: 'Milrinona',
+      classe: 'Inotropico / Vasodilatador',
+      apresentacao: 'Ampola 10mg/10mL (1mg/mL)',
+      unidade: 'mcg/kg/min',
+      dose_min: 0.125,
+      dose_max: 0.75,
+      dose_habitual_min: 0.25,
+      dose_habitual_max: 0.5,
+      dose_alerta: 0.5,
+      indicacao: 'Choque cardiogenico refratario a catecolaminas, falencia de VD, pos-operatorio cardiaco',
+      mecanismo: 'Inibidor da fosfodiesterase III. Aumenta AMPc intracelular — inotropia positiva e vasodilatacao arterial e venosa independentes de receptores beta.',
+      cuidados: 'Hipotensao significativa por vasodilatacao. Ajustar dose em insuficiencia renal (eliminacao predominantemente renal). Associar vasopressor se PA < 90mmHg. Arritmias ventriculares possiveis.',
+      concentracoes_padrao: [10, 20, 40],
+    },
+    {
+      id: 'levosimendan',
+      categoria: 'inotropico',
+      nome: 'Levosimendan',
+      classe: 'Sensibilizador de calcio',
+      apresentacao: 'Frasco 12.5mg/5mL (2.5mg/mL)',
+      unidade: 'mcg/kg/min',
+      dose_min: 0.05,
+      dose_max: 0.2,
+      dose_habitual_min: 0.1,
+      dose_habitual_max: 0.2,
+      dose_alerta: 0.2,
+      indicacao: 'Insuficiencia cardiaca descompensada grave, desmame dificil de VM, pos-operatorio de cirurgia cardiaca de alto risco',
+      mecanismo: 'Sensibiliza a troponina C ao calcio — inotropia sem aumento do consumo de O2. Abre canais K-ATP em vasos — vasodilatacao coronariana e periferica.',
+      cuidados: 'Infusao de 24h precedida de dose de ataque opcional (pode causar hipotensao). Efeito hemodinamico persiste 7-9 dias por metabólitos ativos. Monitorar PA e FC continuamente durante infusao.',
+      concentracoes_padrao: [12.5, 25],
+    },
+    {
+      id: 'isoproterenol',
+      categoria: 'inotropico',
+      nome: 'Isoproterenol',
+      classe: 'Cronotropico / Inotropico',
+      apresentacao: 'Ampola 1mg/5mL (0.2mg/mL)',
+      unidade: 'mcg/min',
+      dose_min: 1,
+      dose_max: 10,
+      dose_habitual_min: 2,
+      dose_habitual_max: 5,
+      dose_alerta: 8,
+      indicacao: 'Bradiarritmia refrataria a atropina (bloqueio AV total, disfuncao de no-SA), ponte para marcapasso, sindrome de QT longo com pausas',
+      mecanismo: 'Agonista beta-1 e beta-2 puro sem atividade alfa. Aumenta FC, contratilidade e reduz RVS. Efeito cronotropico predominante.',
+      cuidados: 'Alto potencial arritmogenico — fibrilacao ventricular em isquemia miocardica. Contraindicado em choque por obstrucao ou hipovolemia. Monitorar ECG continuo obrigatorio.',
+      concentracoes_padrao: [1, 2, 4],
+      calc_especial: 'mcg_min',
+    },
+
+    // ── VASODILATADORES ──────────────────────────────────────────────────────────
+    {
+      id: 'nitroprussiato',
+      categoria: 'vasodilatador',
+      nome: 'Nitroprussiato',
+      classe: 'Vasodilatador misto',
+      apresentacao: 'Frasco 50mg',
+      unidade: 'mcg/kg/min',
+      dose_min: 0.3,
+      dose_max: 10,
+      dose_habitual_min: 0.5,
+      dose_habitual_max: 3.0,
+      dose_alerta: 5.0,
+      indicacao: 'Crise hipertensiva, pos-operatorio cardiaco, reducao de pos-carga em IC grave',
+      mecanismo: 'Doador de oxido nitrico. Vasodilatacao arterial e venosa balanceada. Reduce pre e pos-carga.',
+      cuidados: 'Fotossensivel — proteger equipo e frasco da luz. Risco de intoxicacao por tiocianato/cianeto em uso > 72h ou doses > 3 mcg/kg/min. PA invasiva obrigatoria. Monitorar tiocianato em uso prolongado.',
+      concentracoes_padrao: [50, 100, 200],
+    },
+    {
+      id: 'nitroglicerina',
+      categoria: 'vasodilatador',
+      nome: 'Nitroglicerina',
+      classe: 'Vasodilatador venoso / Coronariano',
+      apresentacao: 'Ampola 50mg/10mL (5mg/mL)',
+      unidade: 'mcg/min',
+      dose_min: 5,
+      dose_max: 400,
+      dose_habitual_min: 10,
+      dose_habitual_max: 100,
+      dose_alerta: 200,
+      indicacao: 'SCA, angina instavel, congestao pulmonar em IC aguda, crise hipertensiva com componente isquemico',
+      mecanismo: 'Doador de NO predominantemente venoso em doses baixas. Em doses altas, dilata tambem arterias coronarianas e perifericas. Reduz pre-carga e demanda de O2 miocardico.',
+      cuidados: 'Cefaleia intensa frequente. Hipotensao por reducao de pre-carga. Contraindicada com inibidores de PDE5 (sildenafil, tadalafil) — hipotensao grave. Tolerancia em uso continuo > 24h. Equipo nao-adsorvente obrigatorio.',
+      concentracoes_padrao: [25, 50, 100],
+      unidade_conc: 'mg',
+      calc_especial: 'mcg_min',
+    },
+    // ── SEDACAO E ANALGESIA ──────────────────────────────────────────────────────
+    {
+      id: 'midazolam',
+      categoria: 'sedoanalgesia',
+      nome: 'Midazolam',
+      classe: 'Benzodiazepínico / Sedativo',
+      apresentacao: 'Ampola 15mg/3mL (5mg/mL) ou 50mg/10mL',
+      unidade: 'mcg/kg/min',
+      dose_min: 0.02,
+      dose_max: 0.2,
+      dose_habitual_min: 0.02,
+      dose_habitual_max: 0.1,
+      dose_alerta: 0.15,
+      indicacao: 'Sedacao de curta a media duracao em VM, procedimentos invasivos, controle de agitacao em UTI',
+      mecanismo: 'Potencializa GABA-A por ligacao a receptor benzodiazepínico. Sedacao, amnesia e acao anticonvulsivante. Inicio rapido, duracao dependente de dose acumulada.',
+      cuidados: 'Acumulo em uso prolongado — especialmente em obesos e hepatopatas. Sindrome de abstinencia em desmame abrupto. Monitorar RASS continuamente. Hipotensao em bolo. Tolerancia com uso > 7 dias.',
+      concentracoes_padrao: [15, 30, 50],
+      calc_especial: 'mcg_kg_min_std',
+    },
+    {
+      id: 'propofol',
+      categoria: 'sedoanalgesia',
+      nome: 'Propofol',
+      classe: 'Anestesico / Sedativo',
+      apresentacao: 'Frasco 200mg/20mL ou 500mg/50mL (10mg/mL)',
+      unidade: 'mcg/kg/min',
+      dose_min: 5,
+      dose_max: 80,
+      dose_habitual_min: 5,
+      dose_habitual_max: 50,
+      dose_alerta: 67,
+      indicacao: 'Sedacao em VM de curta e media duracao, desmame facilitado de ventilacao, sedacao para procedimentos',
+      mecanismo: 'Potencializa GABA-A e inibe receptores NMDA. Inicio de acao em segundos, recuperacao rapida mesmo apos infusao prolongada por redistribuicao.',
+      cuidados: 'Sindrome de infusao do propofol (PRIS) com doses > 67 mcg/kg/min por > 48h — acidose metabolica, rabdomiolise, falencia cardiaca. Monitorar triglicerides. Contagem calorica lipidica (1,1 kcal/mL). Equipo trocado a cada 12h. Nao diluir abaixo de 2mg/mL.',
+      concentracoes_padrao: [200, 500, 1000],
+      calc_especial: 'mcg_kg_min_std',
+    },
+    {
+      id: 'dexmedetomidina',
+      categoria: 'sedoanalgesia',
+      nome: 'Dexmedetomidina',
+      classe: 'Alfa-2 agonista / Sedativo',
+      apresentacao: 'Ampola 200mcg/2mL (100mcg/mL)',
+      unidade: 'mcg/kg/h',
+      dose_min: 0.2,
+      dose_max: 1.5,
+      dose_habitual_min: 0.2,
+      dose_habitual_max: 0.7,
+      dose_alerta: 1.0,
+      indicacao: 'Sedacao leve a moderada em VM, desmame de ventilacao, sedacao cooperativa (RASS -1 a 0), controle de delirium',
+      mecanismo: 'Agonista alfa-2 central (locus coeruleus). Sedacao sem depressao respiratoria significativa. Analgesico adjuvante e simpaticolytico. Paciente permanece arousable.',
+      cuidados: 'Bradicardia e hipotensao — especialmente na dose de ataque (evitar em instabilidade hemodinamica). Nao usar como sedativo unico em sedacao profunda. Dose de ataque de 1 mcg/kg em 10 min opcional — monitorar FC e PA.',
+      concentracoes_padrao: [200, 400],
+      unidade_conc: 'mcg',
+      calc_especial: 'mcg_kg_h',
+    },
+    {
+      id: 'fentanil',
+      categoria: 'sedoanalgesia',
+      nome: 'Fentanil',
+      classe: 'Opioide / Analgesico',
+      apresentacao: 'Ampola 50mcg/mL (0.05mg/mL)',
+      unidade: 'mcg/kg/h',
+      dose_min: 0.5,
+      dose_max: 10,
+      dose_habitual_min: 1,
+      dose_habitual_max: 4,
+      dose_alerta: 6,
+      indicacao: 'Analgesia em VM, analgosedacao, dor pos-operatoria em UTI, procedimentos invasivos',
+      mecanismo: 'Agonista mu-opioide. Alta lipossolubilidade — inicio rapido, duracao moderada. 100x mais potente que morfina. Sem liberacao de histamina.',
+      cuidados: 'Rigidez toracica em doses altas em bolo (sindrome do torax rigido). Acumulo em uso prolongado por deposito em tecido adiposo. Depressao respiratoria — monitorar FR e SpO2. Nauseas, retencao urinaria, obstipacao. Tolerancia e dependencia em uso prolongado.',
+      concentracoes_padrao: [500, 1000, 2500],
+      unidade_conc: 'mcg',
+      calc_especial: 'mcg_kg_h',
+    },
+    {
+      id: 'morfina',
+      categoria: 'sedoanalgesia',
+      nome: 'Morfina',
+      classe: 'Opioide / Analgesico',
+      apresentacao: 'Ampola 10mg/mL',
+      unidade: 'mg/h',
+      dose_min: 1,
+      dose_max: 10,
+      dose_habitual_min: 2,
+      dose_habitual_max: 5,
+      dose_alerta: 7,
+      indicacao: 'Analgesia em UTI, dor moderada a intensa, dispneia refrataria em cuidados paliativos, SCA',
+      mecanismo: 'Agonista mu-opioide. Analgesia, sedacao leve e ansiolise. Libera histamina — broncoespasmo e hipotensao possiveis. Metabolito ativo (M6G) acumula em insuficiencia renal.',
+      cuidados: 'Evitar em insuficiencia renal grave — acumulo de M6G com depressao respiratoria prolongada. Liberacao de histamina pode causar broncoespasmo e hipotensao. Monitorar diurese. Obstipacao invariavel em uso prolongado.',
+      concentracoes_padrao: [10, 20, 50],
+      calc_especial: 'mg_h',
+    },
+    {
+      id: 'ketamina',
+      categoria: 'sedoanalgesia',
+      nome: 'Ketamina',
+      classe: 'Dissociativo / Analgesico',
+      apresentacao: 'Ampola 500mg/10mL (50mg/mL)',
+      unidade: 'mg/kg/h',
+      dose_min: 0.1,
+      dose_max: 2.0,
+      dose_habitual_min: 0.1,
+      dose_habitual_max: 0.5,
+      dose_alerta: 1.0,
+      indicacao: 'Analgesia adjuvante em UTI, sedoanalgesia em broncoespasmo grave, procedimentos dolorosos, reducao de consumo de opioides',
+      mecanismo: 'Antagonista NMDA nao-competitivo. Analgesia dissociativa sem depressao respiratoria significativa. Broncodilatacao por estimulo simpatico. Preserva reflexos de via aerea.',
+      cuidados: 'Alucinacoes e pesadelos — associar benzodiazepínico em dose anestesica. Aumento de secrecoes — monitorar via aerea. Hipertensao e taquicardia por estimulo simpatico — cuidado em cardiopatas. Nao usar em HIC — eleva PIC em doses altas.',
+      concentracoes_padrao: [500, 1000],
+      calc_especial: 'mg_kg_h',
+    },
+    {
+      id: 'remifentanil',
+      categoria: 'sedoanalgesia',
+      nome: 'Remifentanil',
+      classe: 'Opioide ultrarrápido',
+      apresentacao: 'Frasco liofilizado 2mg ou 5mg',
+      unidade: 'mcg/kg/min',
+      dose_min: 0.025,
+      dose_max: 0.2,
+      dose_habitual_min: 0.05,
+      dose_habitual_max: 0.15,
+      dose_alerta: 0.15,
+      indicacao: 'Analgosedacao em VM com desmame rapido previsto, procedimentos em UTI, neuromonitoramento intraoperatorio',
+      mecanismo: 'Agonista mu-opioide de acao ultrarrápida. Metabolizado por esterases plasmaticas e teciduais — independente de funcao renal e hepatica. Sem acumulo, mesmo em infusao prolongada.',
+      cuidados: 'Hiperalgesia paradoxal pos-infusao — titular desmame lentamente e iniciar analgesia de resgate antes de suspender. Rigidez toracica em bolo. Sem efeito residual apos suspensao — nao interromper abruptamente sem cobertura analgesica.',
+      concentracoes_padrao: [2, 5, 10],
+      calc_especial: 'mcg_kg_min_std',
+    },
+  ];
+
+  let drogaSelecionada = null;
+
+  // ─── RENDER BOTOES ────────────────────────────────────────────────────────────
+  function renderDrugButtons() {
+    const grid = document.getElementById('drug-grid');
+    let html = '';
+    CATEGORIAS.forEach(cat => {
+      const drogas = DROGAS.filter(d => d.categoria === cat.id);
+      if (!drogas.length) return;
+      html += `<div class="drug-category">${cat.label}</div>`;
+      html += drogas.map(d => `
+        <button class="drug-btn" data-id="${d.id}" onclick="selecionarDroga('${d.id}')">
+          <span class="drug-name">${d.nome}</span>
+          <span class="drug-class">${d.classe}</span>
+        </button>
+      `).join('');
+    });
+    grid.innerHTML = html;
+  }
+
+  // ─── SELECIONAR DROGA ─────────────────────────────────────────────────────────
+  function selecionarDroga(id) {
+    drogaSelecionada = DROGAS.find(d => d.id === id);
+    document.querySelectorAll('.drug-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`[data-id="${id}"]`).classList.add('active');
+
+    // Atualizar unidade do campo dose
+    document.getElementById('dose-unit').textContent = drogaSelecionada.unidade;
+
+    // Ajustar placeholder da dose
+    const doseInput = document.getElementById('dose');
+    doseInput.placeholder = drogaSelecionada.dose_habitual_min.toString();
+    doseInput.step = drogaSelecionada.unidade === 'UI/h' ? '0.01' : '0.1';
+
+    calcular();
+  }
+
+  // ─── CALCULAR ─────────────────────────────────────────────────────────────────
+  function calcular() {
+    const peso   = parseFloat(document.getElementById('peso').value);
+    const volume = parseFloat(document.getElementById('volume').value);
+    const dose   = parseFloat(document.getElementById('dose').value);
+    const droga  = drogaSelecionada;
+
+    if (!droga) return;
+
+    if (!peso || !volume || !dose) {
+      renderResultPanel(droga, null, null, peso, volume, dose);
+      return;
+    }
+
+    let mlh, concLabel, concValor;
+    const esp = droga.calc_especial;
+
+    if (esp === 'vasopressina') {
+      // UI/min → mL/h
+      const uiTotal = droga.concentracoes_padrao[0];
+      const uiml    = uiTotal / volume;
+      mlh           = (dose * 60) / uiml;
+      concValor     = uiml.toFixed(3);
+      concLabel     = 'UI/mL';
+
+    } else if (esp === 'mcg_min') {
+      // mcg/min (nitroglicerina, isoproterenol) → mL/h
+      const mgTotal = droga.concentracoes_padrao[0];
+      const mcgml   = (mgTotal * 1000) / volume;
+      mlh           = (dose * 60) / mcgml;
+      concValor     = mcgml.toFixed(1);
+      concLabel     = 'mcg/mL';
+
+    } else if (esp === 'mg_h') {
+      // mg/h (morfina, terlipressina) → mL/h
+      const mgTotal = droga.concentracoes_padrao[0];
+      const mgml    = mgTotal / volume;
+      mlh           = dose / mgml;
+      concValor     = mgml.toFixed(4);
+      concLabel     = 'mg/mL';
+
+    } else if (esp === 'mcg_kg_h') {
+      // mcg/kg/h (dexmedetomidina, fentanil) → mL/h
+      // conc em mcg/mL (usando primeira diluicao padrao em mcg)
+      const mcgTotal = droga.concentracoes_padrao[0]; // ja em mcg
+      const mcgml    = mcgTotal / volume;
+      mlh            = (dose * peso) / mcgml;
+      concValor      = mcgml.toFixed(2);
+      concLabel      = 'mcg/mL';
+
+    } else if (esp === 'mg_kg_h') {
+      // mg/kg/h (ketamina) → mL/h
+      const mgTotal = droga.concentracoes_padrao[0];
+      const mgml    = mgTotal / volume;
+      mlh           = (dose * peso) / mgml;
+      concValor     = mgml.toFixed(2);
+      concLabel     = 'mg/mL';
+
+    } else {
+      // Padrao: mcg/kg/min — noradrenalina, dopamina, dobutamina,
+      // midazolam (mcg/kg/min), propofol (mcg/kg/min), remifentanil, fenilefrina, etc.
+      const mgTotal = droga.concentracoes_padrao[0];
+      const mcgml   = (mgTotal * 1000) / volume;
+      mlh           = (dose * peso * 60) / mcgml;
+      concValor     = mcgml.toFixed(0);
+      concLabel     = 'mcg/mL';
+    }
+
+    renderResultPanel(droga, mlh, { valor: concValor, label: concLabel }, peso, volume, dose);
+  }
+
+  // ─── RENDER RESULTADO ─────────────────────────────────────────────────────────
+  function renderResultPanel(droga, mlh, conc, peso, volume, dose) {
+    const painel = document.getElementById('result-panel');
+
+    // Classificacao da dose
+    let classeLabel = '', classeBadge = '', corValue = '';
+    if (dose) {
+      if (dose <= droga.dose_habitual_max) {
+        classeLabel = 'Dentro da faixa habitual';
+        classeBadge = 'badge-ok';
+        corValue = 'ok';
+      } else if (dose <= droga.dose_alerta) {
+        classeLabel = 'Dose elevada — monitoramento intensificado';
+        classeBadge = 'badge-warn';
+        corValue = 'warn';
+      } else {
+        classeLabel = 'Dose critica — reavaliacao imediata';
+        classeBadge = 'badge-danger';
+        corValue = 'danger';
+      }
+    }
+
+    const pct        = dose ? Math.min((dose / droga.dose_max) * 100, 100) : 0;
+    const pctHabitual = (droga.dose_habitual_max / droga.dose_max) * 100;
+    const pctAlerta   = (droga.dose_alerta / droga.dose_max) * 100;
+    const corBarra    = corValue === 'ok' ? '#1a8a4a' : corValue === 'warn' ? '#d4860a' : '#c0392b';
+    const esp         = droga.calc_especial;
+
+    // Tabela de concentracoes — recalcular para cada diluicao padrao
+    const concRows = droga.concentracoes_padrao.map((val, i) => {
+      let concCalc, mlhCalc, unidConc, diluicaoLabel;
+      const esp = droga.calc_especial;
+
+      if (esp === 'vasopressina') {
+        unidConc      = 'UI/mL';
+        diluicaoLabel = `${val} UI / ${volume || '—'} mL`;
+        concCalc      = volume ? (val / volume).toFixed(3) : '—';
+        mlhCalc       = dose && volume ? ((dose * 60) / (val / volume)).toFixed(1) : '—';
+
+      } else if (esp === 'mcg_min') {
+        unidConc      = 'mcg/mL';
+        diluicaoLabel = `${val} mg / ${volume || '—'} mL`;
+        concCalc      = volume ? ((val * 1000) / volume).toFixed(1) : '—';
+        mlhCalc       = dose && volume ? ((dose * 60) / ((val * 1000) / volume)).toFixed(1) : '—';
+
+      } else if (esp === 'mg_h') {
+        unidConc      = 'mg/mL';
+        diluicaoLabel = `${val} mg / ${volume || '—'} mL`;
+        concCalc      = volume ? (val / volume).toFixed(4) : '—';
+        mlhCalc       = dose && volume ? (dose / (val / volume)).toFixed(1) : '—';
+
+      } else if (esp === 'mcg_kg_h') {
+        unidConc      = 'mcg/mL';
+        diluicaoLabel = `${val} mcg / ${volume || '—'} mL`;
+        concCalc      = volume ? (val / volume).toFixed(2) : '—';
+        mlhCalc       = dose && peso && volume ? ((dose * peso) / (val / volume)).toFixed(1) : '—';
+
+      } else if (esp === 'mg_kg_h') {
+        unidConc      = 'mg/mL';
+        diluicaoLabel = `${val} mg / ${volume || '—'} mL`;
+        concCalc      = volume ? (val / volume).toFixed(2) : '—';
+        mlhCalc       = dose && peso && volume ? ((dose * peso) / (val / volume)).toFixed(1) : '—';
+
+      } else {
+        // mcg/kg/min padrao
+        unidConc      = 'mcg/mL';
+        diluicaoLabel = `${val} mg / ${volume || '—'} mL`;
+        concCalc      = volume ? ((val * 1000) / volume).toFixed(0) : '—';
+        mlhCalc       = dose && peso && volume ? ((dose * peso * 60) / ((val * 1000) / volume)).toFixed(1) : '—';
+      }
+
+      return `<tr class="${i === 0 ? 'active-row' : ''}">
+        <td>${diluicaoLabel}</td>
+        <td>${concCalc} ${unidConc}</td>
+        <td>${mlhCalc} mL/h</td>
+      </tr>`;
+    }).join('');
+
+    const precisaPeso = !esp || esp === 'mcg_kg_min';
+    const inputsOk = dose && volume && (precisaPeso ? peso : true);
+
+    painel.innerHTML = `
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-header">Velocidade de Infusao</div>
+        <div class="panel-body">
+          ${inputsOk ? `
+          <div class="result-grid">
+            <div class="result-card">
+              <div class="label">Velocidade</div>
+              <div class="value ${corValue}">${mlh ? mlh.toFixed(1) : '—'}</div>
+              <div class="subvalue">mL / hora</div>
+            </div>
+            <div class="result-card">
+              <div class="label">Concentracao</div>
+              <div class="value">${conc ? conc.valor : '—'}</div>
+              <div class="subvalue">${conc ? conc.label : '—'}</div>
+            </div>
+            <div class="result-card">
+              <div class="label">Dose</div>
+              <div class="value ${corValue}">${dose}</div>
+              <div class="subvalue">${droga.unidade}</div>
+            </div>
+            <div class="result-card">
+              <div class="label">${precisaPeso ? 'Peso referencia' : 'Volume'}</div>
+              <div class="value">${precisaPeso ? (peso || '—') : (volume || '—')}</div>
+              <div class="subvalue">${precisaPeso ? 'kg' : 'mL'}</div>
+            </div>
+          </div>
+
+          <div class="range-section">
+            <div class="range-label">Posicao na faixa terapeutica</div>
+            <div class="range-bar-wrap">
+              <div class="range-bar-fill" style="width:${pct}%; background:${corBarra};"></div>
+              <div class="range-marker" style="left:${pctHabitual}%;"></div>
+              <div class="range-marker" style="left:${pctAlerta}%; background: #d4860a;"></div>
+            </div>
+            <div class="range-ticks">
+              <span>${droga.dose_min}</span>
+              <span>Habitual: ${droga.dose_habitual_min}–${droga.dose_habitual_max}</span>
+              <span>${droga.dose_max} ${droga.unidade}</span>
+            </div>
+            <div class="range-classification">
+              <span class="badge ${classeBadge}">${classeLabel}</span>
+            </div>
+          </div>
+          ` : `
+          <div style="padding:16px 0; color: var(--text3); font-size:13px;">
+            Preencha ${precisaPeso ? 'peso, ' : ''}volume e dose para calcular.
+          </div>
+          `}
+
+          <div style="margin-top:4px;">
+            <div style="font-size:11px; letter-spacing:0.06em; color:var(--text3); text-transform:uppercase; margin-bottom:10px;">Concentracoes de Diluicao</div>
+            <table class="conc-table">
+              <thead>
+                <tr>
+                  <th>Diluicao</th>
+                  <th>Concentracao</th>
+                  <th>Velocidade calculada</th>
+                </tr>
+              </thead>
+              <tbody>${concRows}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">Informacoes Farmacologicas — ${droga.nome}</div>
+        <div class="panel-body">
+          <div class="drug-info">
+            <div class="drug-info-name">
+              <span>${droga.nome}</span>
+              <span class="badge badge-neutral">${droga.classe}</span>
+            </div>
+            <div class="drug-info-row">
+              <span class="k">Apresentacao</span>
+              <span class="v">${droga.apresentacao}</span>
+            </div>
+            <div class="drug-info-row">
+              <span class="k">Indicacao principal</span>
+              <span class="v" style="text-align:right; max-width:280px;">${droga.indicacao}</span>
+            </div>
+            <div class="drug-info-row">
+              <span class="k">Mecanismo</span>
+              <span class="v" style="text-align:right; max-width:280px;">${droga.mecanismo}</span>
+            </div>
+            <div class="drug-info-row">
+              <span class="k">Faixa habitual</span>
+              <span class="v">${droga.dose_habitual_min} – ${droga.dose_habitual_max} ${droga.unidade}</span>
+            </div>
+            <div class="drug-info-row">
+              <span class="k">Dose maxima</span>
+              <span class="v">${droga.dose_max} ${droga.unidade}</span>
+            </div>
+          </div>
+          <div class="disclaimer">
+            <p><strong>Atencao clinica:</strong> ${droga.cuidados}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderDrugInfo() { /* integrado ao render principal */ }
+
+  // ─── INIT ─────────────────────────────────────────────────────────────────────
+  renderDrugButtons();
+</script>
+</body>
+</html>
